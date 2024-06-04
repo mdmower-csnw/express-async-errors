@@ -1,4 +1,4 @@
-require('./index.js');
+require('./index');
 const express = require('express');
 const supertest = require('supertest');
 const assert = require('assert');
