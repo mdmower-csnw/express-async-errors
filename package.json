@@ -1,8 +1,11 @@
 {
-  "name": "express-async-errors",
-  "version": "3.1.1",
+  "name": "@csnw/express-async-errors",
+  "version": "4.0.0",
   "description": "Async/await error handling support for expressjs",
   "main": "index.js",
+  "files": [
+    "index.js"
+  ],
   "scripts": {
     "coverage": "nyc mocha test.js",
     "report": "nyc report --reporter=html",
@@ -10,23 +13,20 @@
     "lint": "eslint .",
     "precommit": "npm run lint"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/davidbanham/express-async-errors.git"
-  },
+  "repository": "CSNW/express-async-errors",
   "keywords": [
+    "express",
     "expressjs",
-    "async/await",
     "async",
     "await",
-    "es6"
+    "error"
   ],
-  "author": "david@banham.id.au",
+  "author": "matt.mower@cornerstonenw.com",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/davidbanham/express-async-errors/issues"
+    "url": "https://github.com/CSNW/express-async-errors/issues"
   },
-  "homepage": "https://github.com/davidbanham/express-async-errors#readme",
+  "homepage": "https://github.com/CSNW/express-async-errors#readme",
   "peerDependencies": {
     "express": "^4"
   },

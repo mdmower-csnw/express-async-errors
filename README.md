@@ -1,69 +1,56 @@
-# ExpressJS Async Errors
+# @csnw/express-async-errors
 
-[![Build Status](https://travis-ci.org/davidbanham/express-async-errors.svg?branch=master)](https://travis-ci.org/davidbanham/express-async-errors)
+An async/await patch for [Express](https://expressjs.com/) error handlers. Async functions already work fine in Express, this module improves support for thrown errors.
 
-A dead simple ES6 async/await support hack for [ExpressJS](http://expressjs.com)
+This package is compatible with both ESM and CommonJS projects. It additionally differs from [express-async-errors](https://www.npmjs.com/package/express-async-errors) by expecting the patch function be called explicitly instead of when the module is `require`'d.
 
-Shamelessly copied from [express-yields](https://github.com/MadRabbit/express-yields)
+This is a fork of a fork; thank you to the original authors:
 
-This has been lightly reworked to handle async rather than generators.
+- [MadRabbit/express-yields](https://github.com/MadRabbit/express-yields)
+- [davidbanham/express-async-errors](https://github.com/davidbanham/express-async-errors)
 
 ## Usage
 
-```
-npm install express-async-errors --save
+```sh
+npm install @csnw/express-async-errors --save
 ```
 
-Then require this script somewhere __before__ you start using it:
-
-Async functions already work fine in Express.
+Run the patch before building `express()`. For example:
 
 ```js
-const express = require('express');
-require('express-async-errors');
-const User = require('./models/user');
+import express from 'express';
+import expressAsyncErrors from '@csnw/express-async-errors';
+
+// Apply patch and then build express
+expressAsyncErrors();
 const app = express();
 
-app.get('/users', async (req, res) => {
-  const users = await User.findAll();
-  res.send(users);
-});
-```
-
-This library is about what happens when you hit an error.
-
-## A Notice About Calling `next`
-
-As we all know express sends a function called `next` into the middleware, which
-then needs to be called with or without error to make it move the request handling
-to the next middleware. It still works, but in case of an async function, you
-don't need to do that. If you want to pass an error, just throw a normal exception:
-
-```js
-app.use(async (req, res) => {
-  const user = await User.findByToken(req.get('authorization'));
-
-  if (!user) throw Error("access denied");
-});
-
-app.use((err, req, res, next) => {
-  if (err.message === 'access denied') {
-    res.status(403);
-    res.json({ error: err.message });
+app.get('/version', async (req, res) => {
+  const version = parseInt(req.query.v);
+  if (isNaN(version)) {
+    // Throw error from async request handler
+    throw new Error('version should be a number');
   }
+  res.status(200).json({ version });
+});
 
-  next(err);
+// Request error handler receives the thrown error
+app.use((err, req, res, next) => {
+  if (err.message === 'version should be a number') {
+    res.status(400).json({ error: err.message });
+    return;
+  }
+  res.status(500).json({ error: 'unexpected error' });
+});
+
+app.listen(3000, () => {
+  console.info('Server running at http://localhost:3000');
 });
 ```
 
 ## How Does This Work?
 
-This is a very minimalistic and unintrusive hack. Instead of patching all methods
-on an express `Router`, it wraps the `Layer#handle` property in one place, leaving
-all the rest of the express guts intact.
-
-The idea is that you require the patch once and then use the `'express'` lib the
-usual way in the rest of your application.
+This is a minimalistic and unintrusive hack. Instead of patching all methods on an express `Router`, it wraps the `Layer#handle` property in one place, leaving all the rest of express as-is. Apply the patch once and then freely throw errors from all your async request handlers!
 
 ## License
 
