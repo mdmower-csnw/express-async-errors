@@ -1,7 +1,9 @@
-require('./index');
 const express = require('express');
 const supertest = require('supertest');
 const assert = require('assert');
+const expressAsyncErrors = require('./index');
+
+expressAsyncErrors();
 
 describe('express-async-errors', () => {
   it('propagates routes errors to error handler', () => {

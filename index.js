@@ -33,15 +33,33 @@ function patchRouterParam() {
   };
 }
 
-Object.defineProperty(Layer.prototype, 'handle', {
-  enumerable: true,
-  get() {
-    return this.__handle;
-  },
-  set(fn) {
-    fn = wrap(fn);
-    this.__handle = fn;
-  },
-});
+function patchLayerHandle() {
+  Object.defineProperty(Layer.prototype, 'handle', {
+    enumerable: true,
+    get() {
+      return this.__handle;
+    },
+    set(fn) {
+      fn = wrap(fn);
+      this.__handle = fn;
+    },
+  });
+}
 
-patchRouterParam();
+/**
+ * Applies async errors patch for Express. This should be called before building `express()`.
+ *
+ * Usage:
+ * ```
+ * import express from 'express';
+ * import expressAsyncErrors from '@csnw/express-async-errors';
+ * expressAsyncErrors();
+ * const app = express();
+ * ```
+ */
+function expressAsyncErrors() {
+  patchLayerHandle();
+  patchRouterParam();
+}
+
+module.exports = expressAsyncErrors;
