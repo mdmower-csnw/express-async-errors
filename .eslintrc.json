@@ -1,13 +1,13 @@
 {
   "extends": "airbnb-base",
   "globals": {
-    "describe": false,
-    "it": false,
-    "before": false,
-    "beforeEach": false,
-    "after": false,
-    "afterEach": false,
-    "expect": false
+    "describe": "readonly",
+    "it": "readonly",
+    "before": "readonly",
+    "beforeEach": "readonly",
+    "after": "readonly",
+    "afterEach": "readonly",
+    "expect": "readonly"
   },
   "rules": {
     "no-underscore-dangle": "off",
