@@ -1,8 +1,6 @@
 # @csnw/express-async-errors
 
-An async/await patch for [Express](https://expressjs.com/) error handlers. Async functions already work fine in Express, this module improves support for thrown errors.
-
-This package is compatible with both ESM and CommonJS projects. It additionally differs from [express-async-errors](https://www.npmjs.com/package/express-async-errors) by expecting the patch function be called explicitly instead of when the module is `require`'d.
+This module patches [Express](https://expressjs.com/) to better support errors thrown from async request handlers. The primary difference of this package from [express-async-errors](https://www.npmjs.com/package/express-async-errors) is that you are expected to call the patch function explicitly, rather than it applying as soon as the module is `require`'d or `import`'ed. Both ESM and CommonJS projects are supported.
 
 This is a fork of a fork; thank you to the original authors:
 
@@ -15,7 +13,8 @@ This is a fork of a fork; thank you to the original authors:
 npm install @csnw/express-async-errors --save
 ```
 
-Run the patch before building `express()`. For example:
+Run the patch before building `express()`.  
+Example:
 
 ```js
 import express from 'express';
@@ -25,32 +24,29 @@ import expressAsyncErrors from '@csnw/express-async-errors';
 expressAsyncErrors();
 const app = express();
 
-app.get('/version', async (req, res) => {
-  const version = parseInt(req.query.v);
-  if (isNaN(version)) {
+app.get('/delay', async (req, res) => {
+  const ms = parseInt(req.query.ms);
+  if (isNaN(ms)) {
     // Throw error from async request handler
-    throw new Error('version should be a number');
+    throw new Error('bad request: ms should be a number');
   }
-  res.status(200).json({ version });
+  await new Promise((resolve) => setTimeout(resolve, ms));
+  res.status(200).json({ success: true, ms });
 });
 
-// Request error handler receives the thrown error
 app.use((err, req, res, next) => {
-  if (err.message === 'version should be a number') {
+  // Request error handler receives the thrown error
+  if (err.message?.startsWith('bad request:')) {
     res.status(400).json({ error: err.message });
     return;
   }
   res.status(500).json({ error: 'unexpected error' });
 });
-
-app.listen(3000, () => {
-  console.info('Server running at http://localhost:3000');
-});
 ```
 
 ## How Does This Work?
 
-This is a minimalistic and unintrusive hack. Instead of patching all methods on an express `Router`, it wraps the `Layer#handle` property in one place, leaving all the rest of express as-is. Apply the patch once and then freely throw errors from all your async request handlers!
+This is a minimalistic and unintrusive hack. Instead of patching all methods on an express `Router`, it wraps the `Layer#handle` property in one place. When a request handler is invoked, the wrapper evaluates the handler and then checks whether the returned value is a promise. If it is, a `catch` is appended to the promise: `.catch((err) => next(err))`. Your request error handler is then able to handle the error passed by `next(err)`. If no error occurs, the `catch` never evaluates.
 
 ## License
 
